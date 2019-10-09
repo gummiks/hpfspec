@@ -1,19 +1,14 @@
-# Fortran installation instructions
 
-You will need to compile two fortran files.
+# HPFspec
 
-To install run the following commands:
+A versatile hpf spectrum class
 
-## Linux
+Capabilities:
 
-> f2py -c -m CCF_1d CCF_1d.f
+- Calculate CCFs for different orders
+- Easily calculate barycentric correction and BJD times
+- Calculate vsinis using a CCF method (uses a slowly rotating calibration star)
 
-> f2py -c -m CCF_3d CCF_3d.f
+# Dependencies
+Depends on the ccf fortran module which has to be in the normal python path
 
-
-## Mac
-On mac you might need to try sudo (verified that this works on my mac).
-
-> sudo f2py -c -m CCF_1d CCF_1d.f
-
-> sudo f2py -c -m CCF_3d CCF_3d.f
