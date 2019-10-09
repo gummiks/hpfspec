@@ -1,0 +1,2 @@
+# hpfspec
+HPF Spectrum Class
