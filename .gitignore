@@ -6,6 +6,15 @@ __pycache__/
 # C extensions
 *.so
 
+# Package specific
+notebooks/out_vsini
+data/target_files
+
+*.swp
+*.swm
+*.swn
+*.swo
+
 # Distribution / packaging
 .Python
 build/
