@@ -17,7 +17,7 @@ import seaborn as sns
 import scipy.interpolate
 import utils
 import h5py
-import ccf
+import crosscorr
 import astropy.time
 import astropy.io
 import hpfspec
@@ -304,7 +304,7 @@ def vsini_calcurve(w_all,f_all,vsinis,v,M,rv_abs,orders=[3,4,5,6,14,15,16,17,18]
         ww_all = hf["template/ww"].value
         ff_all = hf["template/ff"].value
         v = np.linspace(-25,25.,161)
-        M = ccf.mask.Mask("0_CCFS/GJ699/20190309/MASK/0_COMBINED/combined_stellarframe.mas")
+        M = crosscorr.mask.Mask("0_CCFS/GJ699/20190309/MASK/0_COMBINED/combined_stellarframe.mas")
         vsinis = [0.01,1.,2.,3.,4.,5.]
         s,r,a,c = broadening_calcurve(ww_all,ff_all,vsinis,RV_abs,orders=[14,15])
     """
@@ -324,7 +324,7 @@ def vsini_calcurve(w_all,f_all,vsinis,v,M,rv_abs,orders=[3,4,5,6,14,15,16,17,18]
             #wb, fb = utils.rot_broaden_spectrum(w,f,eps=eps,vsini=vs,plot=False)
             #c = ccf.ccf.calculate_ccf(wb,fb,v,M.wi,M.wf,M.weight,-rv_abs)
             fb = rotbroad_help.broaden(w,f,vsini=vs)
-            c = ccf.ccf.calculate_ccf(w,fb,v,M.wi,M.wf,M.weight,-rv_abs)
+            c = crosscorr.calculate_ccf(w,fb,v,M.wi,M.wf,M.weight,-rv_abs)
             _ccfs.append(c)
             #ax.plot(v,c/np.max(c),label="vsini={:0.2f}km/s".format(vs),color=colors[i])
         _ccf_all = np.sum(_ccfs,axis=0)
@@ -487,7 +487,7 @@ def vsini_calcurve_for_wf(w,f,vsinis,v,M,rv_abs,eps=0.6,debug=False,n_points=50,
         ww_all = hf["template/ww"].value
         ff_all = hf["template/ff"].value
         v = np.linspace(-25,25.,161)
-        M = ccf.mask.Mask("0_CCFS/GJ699/20190309/MASK/0_COMBINED/combined_stellarframe.mas")
+        M = crosscorr.mask.Mask("0_CCFS/GJ699/20190309/MASK/0_COMBINED/combined_stellarframe.mas")
         vsinis = [0.01,1.,2.,3.,4.,5.]
         s,r,a,c = broadening_calcurve(ww_all,ff_all,vsinis,RV_abs,orders=[14,15])
         
@@ -520,7 +520,7 @@ def vsini_calcurve_for_wf(w,f,vsinis,v,M,rv_abs,eps=0.6,debug=False,n_points=50,
             #wb, fb = utils.rot_broaden_spectrum(w,f,eps=eps,vsini=vs,plot=False)
             fb = rotbroad_help.broaden(w,f,vsini=vs,u1=eps)
             wb = w
-        c = ccf.ccf.calculate_ccf(wb,fb,v,M.wi,M.wf,M.weight,-rv_abs)
+        c = crosscorr.calculate_ccf(wb,fb,v,M.wi,M.wf,M.weight,-rv_abs)
         c = c/np.max(c)
         if plot:
             ax.plot(v,c,label="vsini={:0.2f}km/s".format(vs),color=colors[i])
@@ -558,7 +558,7 @@ def rvabs(ww,ff,v,M,v2_width=25.,plot=True,ax=None,bx=None,verbose=True,n_points
     
     EXAMPLE:
         # loop through all rvabs for given HPF orders
-        M = ccf.mask.Mask("0_CCFS/GJ699/20190309/MASK/0_COMBINED/combined_stellarframe.mas")
+        M = crosscorr.mask.Mask("0_CCFS/GJ699/20190309/MASK/0_COMBINED/combined_stellarframe.mas")
         for o in [5,6,14,15,16,17,18]:
             ww = ww_all_targ[o]
             ff = ff_all_targ[o] 
@@ -566,7 +566,7 @@ def rvabs(ww,ff,v,M,v2_width=25.,plot=True,ax=None,bx=None,verbose=True,n_points
             rvabs(ww,ff,v,M,plot=False)
     """
     # 1st iteration
-    c = ccf.ccf.calculate_ccf(ww,ff,v,M.wi,M.wf,M.weight,0.) # THE LAST ARGUMENT CHANGES GJ 905 FROM -75.8 to -77.8km/s
+    c = crosscorr.calculate_ccf(ww,ff,v,M.wi,M.wf,M.weight,0.) # THE LAST ARGUMENT CHANGES GJ 905 FROM -75.8 to -77.8km/s
     c = c/np.nanmax(c)
     imin = np.argmin(c)
     vmin = v[imin]
@@ -574,7 +574,7 @@ def rvabs(ww,ff,v,M,v2_width=25.,plot=True,ax=None,bx=None,verbose=True,n_points
         print('First iteration:  RVabs = {:0.5f}km/s'.format(vmin))
     # 2nd iteration
     v2 = np.linspace(vmin-v2_width,vmin+v2_width,161)
-    c2 = ccf.ccf.calculate_ccf(ww,ff,v2,M.wi,M.wf,M.weight,0.)
+    c2 = crosscorr.calculate_ccf(ww,ff,v2,M.wi,M.wf,M.weight,0.)
     c2 = c2/np.nanmax(c2)
     if plot:
         if ax is None and bx is None:
@@ -632,7 +632,7 @@ def vsini_from_calcurve_for_orders_with_rvabs(hf_cal,hf_targ,name_cal,name_targ,
         v_rvabs = np.linspace(-120,120,1000)
         v = np.linspace(-25,25.,161)
         vsinis = [0.000,0.25,0.5,1.,1.5,2.,3.,4.,5.]
-        M = ccf.mask.Mask("0_CCFS/GJ699/20190309/MASK/0_COMBINED/combined_stellarframe.mas")
+        M = crosscorr.mask.Mask("0_CCFS/GJ699/20190309/MASK/0_COMBINED/combined_stellarframe.mas")
         
     """
     ww_all_targ = hf_targ['template/ww'].value
@@ -730,7 +730,7 @@ def vsini_from_hpf_spectra(ftarg,fcal,eps=0.6,
     vsinis2 = [0.05,0.5,1.,2.,3.,4,5.,6.,7.,8.,9.,10.,11.,12.,13.,14.,15.,18.,20.],
     orders = [4,5,6,14,15,16,17],plot=False,
     targname="",calname="",savedir="out_vsini/",
-    M=ccf.mask.Mask(filename="../data/masks/ccf/gj699_combined_stellarframe.mas")):
+    M=crosscorr.mask.Mask(filename="../data/masks/ccf/gj699_combined_stellarframe.mas")):
     """
     Calculate vsinis using CCFs. Requires using a slowly rotating template/calibration star.
     

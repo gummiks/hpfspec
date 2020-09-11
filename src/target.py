@@ -47,7 +47,7 @@ class Target(object):
         config = configparser.ConfigParser()
         config.read(self.config_filename)
         data = dict(config.items('targetinfo'))
-        for key in data.iterkeys():
+        for key in data.keys():
             data[key] = float(data[key])
         return data
 
@@ -55,7 +55,7 @@ class Target(object):
         print('Saving to file {}'.format(self.config_filename))
         config = configparser.ConfigParser()
         config.add_section('targetinfo')
-        for key in data.iterkeys():
+        for key in data.keys():
             config.set('targetinfo',key,str(data[key]))
             print(key,data[key])
         with open(self.config_filename,'w') as f:

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import astropy.io
 import scipy.interpolate
 import os
-import ccf
+import crosscorr
 import utils
 import spec_help
 import stats
@@ -134,9 +134,9 @@ class HPFSpectrum(object):
         NOTES: Calculates on barycentric shifted (NOT ABS RV SHIFTED) and undeblazed version
         """
 
-        self.M = ccf.mask.Mask(self.path_ccf_mask)
+        self.M = crosscorr.mask.Mask(self.path_ccf_mask)
         w = spec_help.redshift(self.w,vo=self.berv,ve=0.)
-        self.ccf = ccf.calculate_ccf_for_hpf_orders(w,self.f,v,self.M,berv=0.,orders=orders,plot=plot)
+        self.ccf = crosscorr.calculate_ccf_for_hpf_orders(w,self.f,v,self.M,berv=0.,orders=orders,plot=plot)
         return self.ccf
 
     def rvabs_for_orders(self,v,orders,v2_width=25.0,plot=True, ax=None, bx=None, verbose=True, n_points=40):
@@ -156,7 +156,7 @@ class HPFSpectrum(object):
 
         NOTES: Calculates on barycentric shifted (NOT ABS RV SHIFTED) and undeblazed version
         """
-        self.M = ccf.mask.Mask(self.path_ccf_mask)
+        self.M = crosscorr.mask.Mask(self.path_ccf_mask)
         w = spec_help.redshift(self.w,vo=self.berv,ve=0.)
         rv1, rv2 = spec_help.rvabs_for_orders(w,self.f,orders,v,self.M,v2_width,plot,ax,bx,verbose,n_points)
         return rv1, rv2
