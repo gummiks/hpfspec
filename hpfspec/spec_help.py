@@ -23,6 +23,7 @@ from . import rv_utils
 from . import rotbroad_help
 c = 299792.4580   # [km/s]
 cp = sns.color_palette("colorblind")
+HPFGJ699MASK = crosscorr.mask.HPFGJ699MASK
 
 def vacuum_to_air(wl):
     """
@@ -723,14 +724,12 @@ def bin_data_with_errors(x,y,yerr,nbin):
     df_bin = pd.DataFrame(zip(xx,yy,yyerr),columns=['x','y','yerr'])
     return df_bin
 
-
-
 def vsini_from_hpf_spectra(ftarg,fcal,eps=0.6,
     v=np.linspace(-35.,35.,161),
     vsinis2 = [0.05,0.5,1.,2.,3.,4,5.,6.,7.,8.,9.,10.,11.,12.,13.,14.,15.,18.,20.],
     orders = [4,5,6,14,15,16,17],plot=False,
     targname="",calname="",savedir="out_vsini/",
-    M=crosscorr.mask.Mask(filename="../data/masks/ccf/gj699_combined_stellarframe.mas")):
+    M=crosscorr.mask.Mask(filename=HPFGJ699MASK)):
     """
     Calculate vsinis using CCFs. Requires using a slowly rotating template/calibration star.
     

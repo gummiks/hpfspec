@@ -10,7 +10,14 @@ from . import stats_help
 from . import utils
 from . import spec_help
 from . import rotbroad_help
-from .target import Target
+from . import target
+DIRNAME = os.path.dirname(__file__)
+PATH_FLAT_DEBLAZED = os.path.join(DIRNAME,"data/hpf/flats/alphabright_fcu_sept18_deblazed.fits")
+PATH_FLAT_BLAZED = os.path.join(DIRNAME,"data/hpf/flats/alphabright_fcu_sept18.fits")
+PATH_TELLMASK = os.path.join(DIRNAME,"data/masks/telluric/telfit_telmask_conv17_thres0.995_with17area.dat")
+PATH_CCF_MASK = crosscorr.mask.HPFGJ699MASK
+PATH_WAVELENGTH = os.path.join(DIRNAME,"data/hpf/wavelength_solution/LFC_wavecal_scifiber_v2.fits")
+PATH_TARGETS = target.PATH_TARGETS
 
 class HPFSpectrum(object):
     """
@@ -20,12 +27,11 @@ class HPFSpectrum(object):
         H = HPFSpectrum(fitsfiles[1])
         H.plot_order(14,deblazed=True)
     """
-    
-    path_flat_deblazed = "../data/hpf/flats/alphabright_fcu_sept18_deblazed.fits"
-    path_flat_blazed = "../data/hpf/flats/alphabright_fcu_sept18.fits"
-    path_tellmask = "../data/masks/telluric/telfit_telmask_conv17_thres0.995_with17area.dat"
-    path_ccf_mask = "../data/masks/ccf/gj699_combined_stellarframe.mas"
-    path_wavelength_solution = "../data/hpf/wavelength_solution/LFC_wavecal_scifiber_v2.fits" 
+    path_flat_deblazed = PATH_FLAT_DEBLAZED
+    path_flat_blazed = PATH_FLAT_BLAZED
+    path_tellmask = PATH_TELLMASK
+    path_ccf_mask = PATH_CCF_MASK
+    path_wavelength_solution = PATH_WAVELENGTH
     SKY_SCALING_FACTOR = 0.90 # seems to work well for order 17
     
     def __init__(self,filename,targetname='',deblaze=True,ccf_redshift=True):
@@ -80,7 +86,7 @@ class HPFSpectrum(object):
         
         if targetname=='':
             targetname = self.object
-        self.target = Target(targetname)
+        self.target = target.Target(targetname)
         self.bjd, self.berv = self.target.calc_barycentric_velocity(self.jd_midpoint,'McDonald Observatory')
 
         print('Barycentric shifting')

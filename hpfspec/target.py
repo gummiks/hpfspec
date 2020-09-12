@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import configparser
 import os
 from . import bary
+DIRNAME = os.path.dirname(__file__)
+PATH_TARGETS = os.path.join(DIRNAME,'data/target_files')
 
 class Target(object):
     """
@@ -18,7 +20,7 @@ class Target(object):
         T = Target('G 9-40')
     """
     
-    def __init__(self,name,config_folder="../data/target_files"):
+    def __init__(self,name,config_folder=PATH_TARGETS):
         self.config_folder = config_folder
         self.config_filename = self.config_folder + os.sep + name + '.config'
         if name=='Teegarden':
