@@ -2,9 +2,9 @@ import barycorrpy
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import bary
 import configparser
 import os
+from . import bary
 
 class Target(object):
     """

@@ -1,12 +1,10 @@
 from __future__ import print_function
 import scipy
 import os
-import rotbroad_help
 import barycorrpy
 import scipy.signal
 import matplotlib.pyplot as plt
 import scipy.interpolate
-import rv_utils
 import numpy as np
 import pandas as pd
 import scipy.ndimage.filters
@@ -15,12 +13,14 @@ from scipy.ndimage.filters import correlate1d
 import astropy.constants as aconst
 import seaborn as sns
 import scipy.interpolate
-import utils
 import h5py
-import crosscorr
 import astropy.time
 import astropy.io
+import crosscorr
 import hpfspec
+from . import utils
+from . import rv_utils
+from . import rotbroad_help
 c = 299792.4580   # [km/s]
 cp = sns.color_palette("colorblind")
 

@@ -10,8 +10,15 @@ Capabilities:
 - Calculate absolute RVs for different orders using CCFs
 - Calculate vsinis using a CCF method (uses a slowly rotating calibration star)
 
+# Installation instructions
+
+> git clone git@github.com:gummiks/hpfspec.git
+> python3.6 setup.py install
+
 # Dependencies
-Depends on the ccf fortran module which has to be in the normal python path
+Depends on 
+- the crosscorr fortran module which has to be in the normal python path
+- barycorrpy
 
 # Todo
 Finish adding HPFSpecMatch, which builds on this class.

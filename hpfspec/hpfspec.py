@@ -6,11 +6,11 @@ import astropy.io
 import scipy.interpolate
 import os
 import crosscorr
-import utils
-import spec_help
-import stats
-from target import Target
-import rotbroad_help
+from . import stats_help
+from . import utils
+from . import spec_help
+from . import rotbroad_help
+from .target import Target
 
 class HPFSpectrum(object):
     """
