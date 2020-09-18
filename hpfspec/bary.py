@@ -4,7 +4,7 @@ from astropy import time, coordinates as coord, units as u
 
 def bjdbrv(jd_utc, ra=None, dec=None, obsname=None, lat=0., lon=0., elevation=None,
         pmra=0., pmdec=0., parallax=0., rv=0., zmeas=0.,
-        epoch=2451545.0, tbase=0., **kwargs):
+        epoch=2451545.0, tbase=0., leap_update=False,**kwargs):
    """
    Wrapper to barycorrpy.py and utc2bjd. Computes the barycentric
    velocity correction and julian date in one call.
@@ -51,7 +51,9 @@ def bjdbrv(jd_utc, ra=None, dec=None, obsname=None, lat=0., lon=0., elevation=No
    bjd = JDUTC.tdb + ltt_bary
    
    # we should be JDUTC
+   if leap_update is False:
+       print('WARNING: LEAP UPDATE=FALSE')
    brv, warning, status = barycorrpy.get_BC_vel(JDUTC, ra=ra, dec=dec, epoch=epoch, pmra=pmra,
-                   pmdec=pmdec, px=parallax, lat=lat, longi=lon, alt=elevation, **kwargs)
+                   pmdec=pmdec, px=parallax, lat=lat, longi=lon, alt=elevation,leap_update=leap_update,**kwargs)
    
    return bjd.value, brv[0]

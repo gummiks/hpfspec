@@ -14,7 +14,7 @@ Capabilities:
 
 > git clone git@github.com:gummiks/hpfspec.git
 
-> python3.6 setup.py install
+> python setup.py install
 
 # Dependencies
 Depends on 
