@@ -1,6 +1,7 @@
 from __future__ import print_function
 import os
 import matplotlib.pyplot as plt
+import matplotlib
 
 def make_dir(dirname,verbose=True):
     try:
@@ -30,4 +31,11 @@ def get_cmap_colors(cmap='jet',p=None,N=10):
         normalize = matplotlib.colors.Normalize(vmin=min(p), vmax=max(p))
         colors = [cm(normalize(value)) for value in p]
         return colors
+
+def ax_set_linewidth(ax,linewidth=2):
+    """
+    Change the line width of the matplotlib axes
+    """
+    for axis in ['top','bottom','left','right']:
+        ax.spines[axis].set_linewidth(linewidth)
 
