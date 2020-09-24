@@ -12,9 +12,11 @@ Capabilities:
 
 # Installation instructions
 
-> git clone git@github.com:gummiks/hpfspec.git
-
-> python setup.py install
+```
+git clone git@github.com:gummiks/hpfspec.git
+cd hpfspec
+python setup.py install
+```
 
 # Dependencies
 Depends on 
