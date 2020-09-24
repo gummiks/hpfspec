@@ -100,6 +100,7 @@ class HPFSpectrum(object):
 
         if deblaze:
             self.deblaze()
+        self.hdu.close()
 
 
     def __repr__(self):
