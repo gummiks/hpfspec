@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import configparser
 import os
+from astroquery.mast import Catalogs
 from . import bary
 DIRNAME = os.path.dirname(__file__)
 PATH_TARGETS = os.path.join(DIRNAME,'data/target_files')
@@ -29,8 +30,13 @@ class Target(object):
         try:
             self.data = self.from_file()
         except Exception as e:
-            print(e,'File does not exist!, Querying simbad')
-            self.data, self.warning = barycorrpy.get_stellar_data(name)
+            print(e,'File does not exist!')
+            if 'TIC' in name:
+                print('Querying TIC for data')
+                self.data = self.query_tic(name)
+            else:
+                print('Querying SIMBAD for data')
+                self.data, self.warning = barycorrpy.utils.get_stellar_data(name)
             self.to_file(self.data)
         self.ra = self.data['ra']
         self.dec = self.data['dec']
@@ -42,6 +48,23 @@ class Target(object):
             self.rv = 0.
         else:
             self.rv = self.data['rv']/1000.# if self.data['rv'] < 1e20 else 0.
+
+
+    def query_tic(self,ticname):
+        """
+        Query the TESS Input Catalog for data
+        """
+        name = ticname.replace('-',' ').replace('_',' ')
+        df = Catalogs.query_object(name, radius=0.0003, catalog="TIC").to_pandas()[0:1]
+        data = {}
+        data['ra'] = df.ra.values[0]
+        data['dec'] = df.dec.values[0]
+        data['pmra'] = df.pmRA.values[0]
+        data['pmdec'] = df.pmDEC.values[0]
+        data['px'] = df.plx.values[0]
+        data['epoch'] = 2451545.0
+        data['rv'] = 0.
+        return data
 
     def from_file(self):
         print('Reading from file {}'.format(self.config_filename))

@@ -234,8 +234,11 @@ class HPFSpectrum(object):
         self.rv = rv
 
     def rotbroad(self,ww,vsini,eps=0.6,plot=False):
+        """
+        Broaden with vsini
+        """
         ff, ee = self.resample_order(ww)
-        _, _f = gkastro.rot_broaden_spectrum(ww,ff,eps,vsini,interpolate=False,plot=plot)
+        _f = rotbroad_help.broaden(ww,ff,vsini,u1=eps)
         return _f
         
     def plot_order(self,o,deblazed=False):
