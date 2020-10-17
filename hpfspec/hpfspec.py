@@ -19,6 +19,7 @@ PATH_CCF_MASK = crosscorr.mask.HPFGJ699MASK
 PATH_WAVELENGTH = os.path.join(DIRNAME,"data/hpf/wavelength_solution/LFC_wavecal_scifiber_v2.fits")
 PATH_TARGETS = target.PATH_TARGETS
 
+
 class HPFSpectrum(object):
     """
     Yet another HPF Spectrum object. Can work with deblazed spectra.
@@ -32,7 +33,7 @@ class HPFSpectrum(object):
     path_tellmask = PATH_TELLMASK
     path_ccf_mask = PATH_CCF_MASK
     path_wavelength_solution = PATH_WAVELENGTH
-    SKY_SCALING_FACTOR = 0.90 # seems to work well for order 17
+    SKY_SCALING_FACTOR = 1.0 
     
     def __init__(self,filename,targetname='',deblaze=True,ccf_redshift=True):
         self.filename = filename
@@ -101,7 +102,6 @@ class HPFSpectrum(object):
         if deblaze:
             self.deblaze()
         #self.hdu.close()
-
 
     def __repr__(self):
         return 'HPFSpec({},sn18={:0.1f})'.format(self.object,self.sn18)
