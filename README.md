@@ -20,7 +20,7 @@ python setup.py install
 
 # Dependencies
 Depends on 
-- the crosscorr fortran module which has to be in the normal python path
+- crosscorr (https://github.com/gummiks/crosscorr)
 - barycorrpy
 
 # Todo
