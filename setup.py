@@ -5,13 +5,13 @@ def readme():
         return f.read()
 
 setup(name='hpfspec',
-      version='0.1.0',
+      version='0.1.1',
       description='Package to work with HPF Spectra',
       long_description=readme(),
       url='https://github.com/gummiks/hpfspec/',
       author='Gudmundur Stefansson',
       author_email='gummiks@gmail.com',
-      install_requires=['barycorrpy>=0.3.4','astroquery'],
+      install_requires=['barycorrpy>=0.3.4','astroquery','crosscorr'],
       packages=['hpfspec'],
       license='GPLv3',
       classifiers=['Topic :: Scientific/Engineering :: Astronomy'],

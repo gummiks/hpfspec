@@ -34,7 +34,7 @@ class HPFSpectrum(object):
     path_skymask = PATH_SKYMASK
     path_ccf_mask = PATH_CCF_MASK
     path_wavelength_solution = PATH_WAVELENGTH
-    SKY_SCALING_FACTOR = 1.0 
+    SKY_SCALING_FACTOR = 0.88
     
     def __init__(self,filename,targetname='',deblaze=True,ccf_redshift=True,tell_err_factor=1.,sky_err_factor=1.):
         self.filename = filename
@@ -331,11 +331,11 @@ class HPFSpectrum(object):
 
 class HPFSpecList(object):
 
-    def __init__(self,splist=None,filelist=None,tell_err_factor=1.,sky_err_factor=1.):
+    def __init__(self,splist=None,filelist=None,tell_err_factor=1.,sky_err_factor=1.,targetname=''):
         if splist is not None:
             self.splist = splist
         else:
-            self.splist = [HPFSpectrum(i,tell_err_factor=tell_err_factor,sky_err_factor=sky_err_factor) for i in filelist]
+            self.splist = [HPFSpectrum(i,tell_err_factor=tell_err_factor,sky_err_factor=sky_err_factor,targetname=targetname) for i in filelist]
 
     @property
     def sn18(self):
