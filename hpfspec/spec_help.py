@@ -612,12 +612,12 @@ def rvabs_for_orders(ww_all,ff_all,orders,v,M,v2_width=25.,plot=True,ax=None,bx=
     for o in orders:
         ww = ww_all[o]
         ff = ff_all[o] 
-        r1, r2 = rvabs(ww,ff,v,M,v2_width=v2_width,plot=plot,ax=ax,bx=bx,verbose=verbose,n_points=n_points)
+        r1, r2 = rvabs(ww,ff,v,M,v2_width=v2_width,plot=plot,ax=ax,bx=bx,verbose=False,n_points=n_points)#SEJ verbose=verbose
         rv_abs1.append(r1)
         rv_abs2.append(r2)
     if verbose:
-        print('RVabs it #1: {:8.5f}+-{:8.5f}km/s'.format(np.mean(rv_abs1),np.std(rv_abs1)))
-        print('RVabs it #2: {:8.5f}+-{:8.5f}km/s'.format(np.mean(rv_abs2),np.std(rv_abs2)))
+        print('RVabs iteration #1: {:8.5f}+-{:8.5f}km/s'.format(np.mean(rv_abs1),np.std(rv_abs1)))
+        print('RVabs iteration #2: {:8.5f}+-{:8.5f}km/s'.format(np.mean(rv_abs2),np.std(rv_abs2)))
     return np.array(rv_abs1), np.array(rv_abs2)
 
 def vsini_from_calcurve_for_orders_with_rvabs(hf_cal,hf_targ,name_cal,name_targ,v_rvabs,v,M,vsinis,

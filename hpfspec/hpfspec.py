@@ -163,6 +163,8 @@ class HPFSpectrum(object):
 
         NOTES: Calculates on barycentric shifted (NOT ABS RV SHIFTED) and undeblazed version
         """
+        if (self.object == 'HD_24238') or (self.object == 'GJ_3507') or (self.object == 'LHS_3353') or (self.object == 'LSPM_J0255+2652E'):
+            orders = [3]
         self.M = crosscorr.mask.Mask(self.path_ccf_mask)
         w = spec_help.redshift(self.w,vo=self.berv,ve=0.)
         rv1, rv2 = spec_help.rvabs_for_orders(w,self.f,orders,v,self.M,v2_width,plot,ax,bx,verbose,n_points)
