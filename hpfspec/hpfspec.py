@@ -34,7 +34,8 @@ class HPFSpectrum(object):
     path_skymask = PATH_SKYMASK
     path_ccf_mask = PATH_CCF_MASK
     path_wavelength_solution = PATH_WAVELENGTH
-    SKY_SCALING_FACTOR = 0.88
+    #SKY_SCALING_FACTOR = 0.88
+    SKY_SCALING_FACTOR = 1.0
     
     def __init__(self,filename,targetname='',deblaze=True,ccf_redshift=True,tell_err_factor=1.,sky_err_factor=1.):
         self.filename = filename
@@ -105,7 +106,6 @@ class HPFSpectrum(object):
         self.rv = 0.
         if ccf_redshift:
             v = np.linspace(-125,125,1501)
-            #v = np.linspace(-20,20,1501)
             _, rabs = self.rvabs_for_orders(v,orders=[5],plot=False)
             self.rv = np.median(rabs)
             self.redshift(rv=self.rv)
@@ -226,9 +226,6 @@ class HPFSpectrum(object):
         ee = scipy.interpolate.interp1d(w,e,kind='linear')(ww)
 
         if p is not None:
-            #print('Applying polynomial',p)
-            #ff*=np.polyval(p,ww)
-            #ee*=np.polyval(p,ww)
             print('Applying Chebychev polynomial',p)
             ff*=np.polynomial.chebyshev.chebval(ww,p)
             ee*=np.polynomial.chebyshev.chebval(ww,p)
