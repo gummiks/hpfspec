@@ -15,6 +15,7 @@ DIRNAME = os.path.dirname(__file__)
 PATH_FLAT_DEBLAZED = os.path.join(DIRNAME,"data/hpf/flats/alphabright_fcu_sept18_deblazed.fits")
 PATH_FLAT_BLAZED = os.path.join(DIRNAME,"data/hpf/flats/alphabright_fcu_sept18.fits")
 PATH_TELLMASK = os.path.join(DIRNAME,"data/masks/telluric/telfit_telmask_conv17_thres0.995_with17area.dat")
+PATH_SKYMASK = os.path.join(DIRNAME,"data/masks/sky/HPF_SkyEmmissionLineWavlMask_broadened_11111_Compressed.txt")
 PATH_CCF_MASK = crosscorr.mask.HPFGJ699MASK
 PATH_WAVELENGTH = os.path.join(DIRNAME,"data/hpf/wavelength_solution/LFC_wavecal_scifiber_v2.fits")
 PATH_TARGETS = target.PATH_TARGETS
@@ -30,11 +31,13 @@ class HPFSpectrum(object):
     path_flat_deblazed = PATH_FLAT_DEBLAZED
     path_flat_blazed = PATH_FLAT_BLAZED
     path_tellmask = PATH_TELLMASK
+    path_skymask = PATH_SKYMASK
     path_ccf_mask = PATH_CCF_MASK
     path_wavelength_solution = PATH_WAVELENGTH
-    SKY_SCALING_FACTOR = 0.90 # seems to work well for order 17
+    #SKY_SCALING_FACTOR = 0.88
+    SKY_SCALING_FACTOR = 1.0
     
-    def __init__(self,filename,targetname='',deblaze=True,ccf_redshift=True):
+    def __init__(self,filename,targetname='',deblaze=True,ccf_redshift=True,tell_err_factor=1.,sky_err_factor=1.):
         self.filename = filename
         self.basename = filename.split(os.sep)[-1]
         
@@ -75,6 +78,16 @@ class HPFSpectrum(object):
             self.w = astropy.io.fits.getdata(self.path_wavelength_solution)
             self.drift_corrected = False
 
+        # Inflate errors around tellurics and sky emission lines
+        mt = self.get_telluric_mask()
+        ms = self.get_sky_mask()
+        if tell_err_factor == sky_err_factor:
+            mm = mt | ms
+            self.e[mm] *= tell_err_factor
+        else:
+            self.e[mt] *= tell_err_factor
+            self.e[ms] *= sky_err_factor
+
         self.sn5 = np.nanmedian(self.f[5]/self.e[5])
         self.sn6 = np.nanmedian(self.f[6]/self.e[6])
         self.sn14 = np.nanmedian(self.f[14]/self.e[14])
@@ -93,7 +106,6 @@ class HPFSpectrum(object):
         self.rv = 0.
         if ccf_redshift:
             v = np.linspace(-125,125,1501)
-            #v = np.linspace(-20,20,1501)
             _, rabs = self.rvabs_for_orders(v,orders=[5],plot=False)
             self.rv = np.median(rabs)
             self.redshift(rv=self.rv)
@@ -118,9 +130,31 @@ class HPFSpectrum(object):
         
         EXAMPLE:
         """
-        if w is None: w = self.w
+        if w is None:
+            w = self.w
         mask = np.genfromtxt(self.path_tellmask)
         m = scipy.interpolate.interp1d(mask[:,0],mask[:,1])(w) > 0.01
+        if o is None:
+            return m
+        else:
+            m[o]
+
+    def get_sky_mask(self,w=None,o=None):
+        """
+        Return sky mask interpolated onto a given grid.
+        
+        INPUT:
+            w - wavelength grid to interpolate on
+            o - 
+            
+        OUTPUT:
+        
+        EXAMPLE:
+        """
+        if w is None:
+            w = self.w
+        mask = np.genfromtxt(self.path_skymask)
+        m = scipy.interpolate.interp1d(mask[:,0],mask[:,1],fill_value="extrapolate")(w) > 0.01
         if o is None:
             return m
         else:
@@ -170,7 +204,6 @@ class HPFSpectrum(object):
         rv1, rv2 = spec_help.rvabs_for_orders(w,self.f,orders,v,self.M,v2_width,plot,ax,bx,verbose,n_points)
         return rv1, rv2
 
-            
     def resample_order(self,ww,p=None,vsini=None,shifted=True):
         """
         Resample order to a given grid. Useful when comparing spectra and calculating chi2
@@ -195,9 +228,6 @@ class HPFSpectrum(object):
         ee = scipy.interpolate.interp1d(w,e,kind='linear')(ww)
 
         if p is not None:
-            #print('Applying polynomial',p)
-            #ff*=np.polyval(p,ww)
-            #ee*=np.polyval(p,ww)
             print('Applying Chebychev polynomial',p)
             ff*=np.polynomial.chebyshev.chebval(ww,p)
             ee*=np.polynomial.chebyshev.chebval(ww,p)
@@ -205,7 +235,6 @@ class HPFSpectrum(object):
             print('Applying vsini: {}km/s'.format(vsini))
             ff = rotbroad_help.broaden(ww,ff,vsini)
         return ff, ee
-            
             
     def deblaze(self):
         """
@@ -243,27 +272,53 @@ class HPFSpectrum(object):
         _f = rotbroad_help.broaden(ww,ff,vsini,u1=eps)
         return _f
         
-    def plot_order(self,o,deblazed=False):
+    def plot_order(self,o,deblazed=False,shifted=False,ax=None,color=None,plot_shaded=True,alpha=1.):
         """
         Plot spectrum deblazed or not
         
         EXAMPLE:
             
         """
-        mask = np.genfromtxt(self.path_tellmask)
-        m = self.get_telluric_mask()
+        mask_tell = np.genfromtxt(self.path_tellmask)
+        mask_sky = np.genfromtxt(self.path_skymask)
+        mt = self.get_telluric_mask()
+        ms = self.get_sky_mask()
 
-        fig, ax = plt.subplots(dpi=200)
+        if ax is None:
+            fig, ax = plt.subplots(dpi=200)
         if deblazed:
             self.deblaze()
-            ax.plot(self.w[o],self.f_debl[o])
-            ax.fill_between(mask[:,0],mask[:,1],color='red',alpha=0.1)
-            ax.plot(self.w[o][m[o]],self.f_debl[o][m[o]],lw=0,marker='.',markersize=2,color='red')
+            f = self.f_debl[o]
+            e = self.e_debl[o]
+            f_mt = mask_tell[:,1]
+            f_ms = mask_sky[:,1]
+            if shifted:
+                w = self.w_shifted[o]
+                w_mt = spec_help.redshift(mask_tell[:,0],vo=self.berv,ve=self.rv)
+                w_ms = spec_help.redshift(mask_sky[:,0],vo=self.berv,ve=self.rv)
+            else:
+                w = self.w[o]
+                w_mt = mask_tell[:,0]
+                w_ms = mask_sky[:,0]
         else:
-            ax.plot(self.w[o],self.f[o])
-            ax.plot(self.w[o],self.f_sci[o],alpha=0.3)
-            ax.fill_between(mask[:,0],mask[:,1],color='red',alpha=0.1)
-            ax.plot(self.w[o][m[o]],self.f_debl[o][m[o]],lw=0,marker='.',markersize=2,color='red')
+            f = self.f[o]
+            e = self.e[o]
+            f_mt = mask_tell[:,1]*np.nanmax(f)
+            f_ms = mask_sky[:,1]*np.nanmax(f)
+            if shifted:
+                w = self.w_shifted[o]
+                w_mt = spec_help.redshift(mask_tell[:,0],vo=self.berv,ve=self.rv)
+                w_ms = spec_help.redshift(mask_sky[:,0],vo=self.berv,ve=self.rv)
+            else:
+                w = self.w[o]
+                w_mt = mask_tell[:,0]
+                w_ms = mask_sky[:,0]
+        ax.errorbar(w,f,e,marker='o',lw=0.5,capsize=2,mew=0.5,elinewidth=0.5,markersize=2,color=color,alpha=alpha)
+        if plot_shaded:
+            ax.plot(w[mt[o]],f[mt[o]],lw=0,marker='.',markersize=2,color='blue')
+            ax.plot(w[ms[o]],f[ms[o]],lw=0,marker='.',markersize=2,color='red')
+            ax.fill_between(w_mt,f_mt,color='blue',alpha=0.1)
+            ax.fill_between(w_ms,f_ms,color='red',alpha=0.1)
 
         utils.ax_apply_settings(ax)
         ax.set_title('{}, {}, order={}, SN18={:0.2f}\nBJD={}, BERV={:0.5f}km/s'.format(self.object,
@@ -275,11 +330,11 @@ class HPFSpectrum(object):
 
 class HPFSpecList(object):
 
-    def __init__(self,splist=None,filelist=None):
+    def __init__(self,splist=None,filelist=None,tell_err_factor=1.,sky_err_factor=1.,targetname=''):
         if splist is not None:
             self.splist = splist
         else:
-            self.splist = [HPFSpectrum(i) for i in filelist]
+            self.splist = [HPFSpectrum(i,tell_err_factor=tell_err_factor,sky_err_factor=sky_err_factor,targetname=targetname) for i in filelist]
 
     @property
     def sn18(self):
