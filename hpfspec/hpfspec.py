@@ -34,12 +34,11 @@ class HPFSpectrum(object):
     path_skymask = PATH_SKYMASK
     path_ccf_mask = PATH_CCF_MASK
     path_wavelength_solution = PATH_WAVELENGTH
-    #SKY_SCALING_FACTOR = 0.88
-    SKY_SCALING_FACTOR = 1.0
     
-    def __init__(self,filename,targetname='',deblaze=True,ccf_redshift=True,tell_err_factor=1.,sky_err_factor=1.):
+    def __init__(self,filename,targetname='',deblaze=True,ccf_redshift=True,tell_err_factor=1.,sky_err_factor=1.,sky_scaling_factor=1.0):
         self.filename = filename
         self.basename = filename.split(os.sep)[-1]
+        self.sky_scaling_factor = sky_scaling_factor
         
         # Read science frame
         self.hdu = astropy.io.fits.open(filename)
@@ -58,11 +57,11 @@ class HPFSpectrum(object):
         self.flat_sky = self.hdu_flat[2].data
         
         self.e_sci = np.sqrt(self.hdu[4].data)*self.exptime
-        self.e_sky = np.sqrt(self.hdu[5].data)*self.exptime*self.SKY_SCALING_FACTOR
+        self.e_sky = np.sqrt(self.hdu[5].data)*self.exptime*self.sky_scaling_factor
         self.e_cal = np.sqrt(self.hdu[6].data)*self.exptime
         self.e = np.sqrt(self.hdu[4].data + self.hdu[5].data)*self.exptime
 
-        self.f_sky = (self.hdu[2].data*self.exptime/self.flat_sky)*self.SKY_SCALING_FACTOR
+        self.f_sky = (self.hdu[2].data*self.exptime/self.flat_sky)*self.sky_scaling_factor
         self._f_sky = self.hdu[2].data*self.exptime
         
         self._f_sci = self.hdu[1].data*self.exptime
@@ -243,7 +242,7 @@ class HPFSpectrum(object):
         hdu = astropy.io.fits.open(self.path_flat_blazed)
         self.f_sci_debl = self.hdu[1].data*self.exptime/hdu[1].data
         self.f_sky_debl = self.hdu[2].data*self.exptime/hdu[2].data
-        self.f_debl = self.f_sci_debl-self.f_sky_debl*self.SKY_SCALING_FACTOR
+        self.f_debl = self.f_sci_debl-self.f_sky_debl*self.sky_scaling_factor
         for i in range(28): 
             self.f_debl[i] = self.f_debl[i]/np.nanmedian(self.f_debl[i])
         self.e_debl = self.f_debl/self.sn
