@@ -905,3 +905,81 @@ def vsini_from_hpf_spectra(ftarg,fcal,eps=0.6,
         print("Saved to {}".format(savename))
     
     return vmean, vsigma
+
+def calculate_ew_w_errors(wl,fl,e,limit_left,limit_right,N=100):
+    """
+    Main EW function to use, performs an MC sampling of spec_help.calculate_ew() to get errors
+
+    INPUT:
+        start- start wavelength in A
+        stop - stop wavelength in A
+
+    OUTPUT:
+        med - Median value
+        low - Lower errorbar
+        up  - Upper errorbar
+        ews - Posterior
+
+    EXAMPLE:
+        _EW0 = [M.get_ew(LIM[0],LIM[1]) for M in MT0.splist]
+    """
+    ews = []
+    for i in range(N):
+        f_w_err = np.array([f + e*np.random.randn(1)[0] for f, e in zip(fl,e) ])
+        _e = calculate_ew(wl,f_w_err,limit_left,limit_right)
+        ews.append(_e)
+    ews = np.array(ews)
+    med = np.percentile(ews,50)
+    low = med - np.percentile(ews,16)
+    up  = np.percentile(ews,84) - med
+    return med, low, up, ews
+
+def calculate_ew(wl,fl,limit_left,limit_right):
+    """
+    This amounts to calculating INT(1 - F / F_continuum)*d_wl with the bounds as the feature limits
+    Our F_continuum is assumed to be 0 and we have a discrete sampling so use a sum
+    """
+    
+    # for now just force it to be that we have the feature entirely within the bounds
+    assert limit_left > np.nanmin(wl)
+    assert limit_right < np.nanmax(wl)
+    
+    # need to calculate the wavelength bin sizes to match against limits
+    # each wavelength bin has a center, left, and right. We assume that we are given the center
+    # need to calculate left and right
+    bin_size = np.diff(wl)
+    # assuming that the bin size doesn't change meaningfully from one bin to the next one
+    bin_size = np.concatenate(([bin_size[0]],bin_size))
+    bin_left = wl - bin_size/2.
+    bin_right = wl + bin_size/2.
+    
+    # check to make sure which pixels are finite (i.e. not NaN) values to work with
+    condition_finite = np.isfinite(fl)
+    
+    # handle pixels entirely within the bounds:
+    condition_all_in = (bin_left >= limit_left) & (bin_right <= limit_right)
+    
+    # select the pixels that are finite and those that are all in
+    use = np.nonzero(condition_finite & condition_all_in)[0]
+    wluse = wl[use]
+    fluse = fl[use]
+    
+    # recalculate bin boundaries, just in case we lost any pixels due to NaN
+    bins = np.diff(wluse)
+    bins = np.concatenate(([bins[0]],bins))
+    
+    # do the calculation and sum
+    sub = (1. - fluse) * bins
+    
+    # add the left extra bin
+    leftmost_index = use[0]
+    left_extra_bin = bin_right[leftmost_index-1] - limit_left
+    left_extra_val = (1. - fl[leftmost_index-1]) * left_extra_bin
+    #print(use)
+    
+    # right extra bin
+    rightmost_index = use[-1]
+    right_extra_bin = limit_right - bin_left[rightmost_index+1]
+    right_extra_val = (1. - fl[rightmost_index+1]) * right_extra_bin
+    
+    return(np.sum(sub) + left_extra_val + right_extra_val)

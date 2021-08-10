@@ -13,24 +13,24 @@ def rv_gaussian_fit_single_ccf(velocity, ccf, n_points=40,p0=[0,0.,3.0,0], mask_
     
     Parameters
     ----------
-    velocity : np.ndarray
-    velocity (in km/s)
-    ccf : np.ndarray
-    ccf value
-    n_points : int
-    total number of points on either side of the minimum to fit, must be >= 2
-    mask_inner : int
-    number of points to ignore on either side of the minimum when fitting (including minimum itself)
-    (if 1, ignore the minimum point only)
-    debug : boolean
-    if True then include print-outs and show a plot
-    all : boolean
-    if True then include the three non-functional orders and the co-added "order"
+        velocity : np.ndarray
+        velocity (in km/s)
+        ccf : np.ndarray
+        ccf value
+        n_points : int
+        total number of points on either side of the minimum to fit, must be >= 2
+        mask_inner : int
+        number of points to ignore on either side of the minimum when fitting (including minimum itself)
+        (if 1, ignore the minimum point only)
+        debug : boolean
+        if True then include print-outs and show a plot
+        all : boolean
+        if True then include the three non-functional orders and the co-added "order"
 
     Returns
     -------
-    order_par : np.ndarray
-    best-fit Gaussian parameters for each order: (amplitude, mean, sigma, offset)
+        order_par : np.ndarray
+        best-fit Gaussian parameters for each order: (amplitude, mean, sigma, offset)
     '''
     if (n_points < 1):
         print("Cannot fit a Gaussian to < 4 points! Try n_points = 2")
@@ -41,7 +41,8 @@ def rv_gaussian_fit_single_ccf(velocity, ccf, n_points=40,p0=[0,0.,3.0,0], mask_
     ind_min = np.argmin(ccf)
     ind_range = np.arange(n_points*2+1) + ind_min - n_points
     if (ind_range > 160).any() or (ind_range < 0).any():
-        print("n_points too large, defaulting to all")
+        if debug:
+            print("n_points too large, defaulting to all")
         ind_range = np.arange(len(velocity))
     ind_range = np.delete(ind_range, np.where(np.abs(ind_range - ind_min) < mask_inner))
     popt, pcov = curve_fit(gauss_function, velocity[ind_range], ccf[ind_range], p0=p0, maxfev=10000)

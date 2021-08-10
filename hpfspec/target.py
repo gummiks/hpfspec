@@ -21,14 +21,24 @@ class Target(object):
         T = Target('G 9-40')
     """
     
-    def __init__(self,name,config_folder=PATH_TARGETS):
+    def __init__(self,name,config_folder=PATH_TARGETS,verbose=False):
         self.config_folder = config_folder
         self.config_filename = self.config_folder + os.sep + name + '.config'
         if name=='Teegarden':
             name = "Teegarden's star"
+        if name=='HR8926-4':
+            name = 'GL87'
+        if name=='GJ_1151':
+            name = 'GJ 1151'
+        if name=='GJ_324_A':
+            name = 'GJ_324A'
+        if name=='HD_68988':
+            name = 'HD 68988'
+        if name=='NLTT_51984':
+            name = 'GJ_9751'
         self.name = name
         try:
-            self.data = self.from_file()
+            self.data = self.from_file(verbose=verbose)
         except Exception as e:
             print(e,'File does not exist!')
             if 'TIC' in name:
@@ -66,8 +76,9 @@ class Target(object):
         data['rv'] = 0.
         return data
 
-    def from_file(self):
-        print('Reading from file {}'.format(self.config_filename))
+    def from_file(self,verbose=False):
+        if verbose:
+            print('Reading from file {}'.format(self.config_filename))
         #if os.path.exists(self.config_filename):
         config = configparser.ConfigParser()
         config.read(self.config_filename)
