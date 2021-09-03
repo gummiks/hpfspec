@@ -107,7 +107,7 @@ class HPFSpectrum(object):
         self.rv = 0.
         if ccf_redshift:
             v = np.linspace(-125,125,1501)
-            _, rabs = self.rvabs_for_orders(v,orders=[5],plot=False,verbose=verbose)
+            _, rabs = self.rvabs_for_orders(v,orders=[5,6,16,17],plot=False,verbose=verbose)
             self.rv = np.median(rabs)
             self.redshift(rv=self.rv)
 
@@ -224,11 +224,9 @@ class HPFSpectrum(object):
 
         NOTES: Calculates on barycentric shifted (NOT ABS RV SHIFTED) and undeblazed version
         """
-        #if (self.object == 'HD_24238') or (self.object == 'GJ_3507') or (self.object == 'LHS_3353') or (self.object == 'LSPM_J0255+2652E'):
-        if self.object in ['HD_24238','GJ_3507','LHS_3353','LSPM_J0255+2652E','NLTT_51984']:
-            orders = [3]
         self.M = crosscorr.mask.Mask(self.path_ccf_mask)
         w = spec_help.redshift(self.w,vo=self.berv,ve=0.)
+        #m = np.isfinite(self.f)
         rv1, rv2 = spec_help.rvabs_for_orders(w,self.f,orders,v,self.M,v2_width,plot,ax,bx,verbose,n_points)
         return rv1, rv2
 
