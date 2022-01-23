@@ -1,12 +1,8 @@
 import numpy as np
 import os, sys
 import datetime
-from astropy.table import Table
 import pandas as pd
 from astropy.io import ascii, fits
-from scipy.signal import medfilt
-from barycorrpy import get_BC_vel
-import astropy.constants as ac
 from scipy.interpolate import interp1d
 
 from astropy.constants import c
