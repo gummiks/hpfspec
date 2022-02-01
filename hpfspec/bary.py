@@ -56,4 +56,7 @@ def bjdbrv(jd_utc, ra=None, dec=None, obsname=None, lat=0., lon=0., elevation=No
    brv, warning, status = barycorrpy.get_BC_vel(JDUTC, ra=ra, dec=dec, epoch=epoch, pmra=pmra,
                    pmdec=pmdec, px=parallax, lat=lat, longi=lon, alt=elevation,leap_update=leap_update,**kwargs)
    
-   return bjd.value, brv[0]
+   if len(brv) > 1:
+       return bjd.value, brv
+	else:
+       return bjd.value, brv[0]
