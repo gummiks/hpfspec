@@ -58,5 +58,5 @@ def bjdbrv(jd_utc, ra=None, dec=None, obsname=None, lat=0., lon=0., elevation=No
    
    if len(brv) > 1:
        return bjd.value, brv
-	else:
+   else:
        return bjd.value, brv[0]
