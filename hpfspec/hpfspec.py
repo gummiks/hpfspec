@@ -529,7 +529,6 @@ class HPFSpecList(object):
                          columns=['OBJECT_ID','filename','exptime','sn18','qprog','rv'])
         return d
 
-<<<<<<< HEAD
     
     def resample_order(self,ww,p=None,shifted=True):
         """
