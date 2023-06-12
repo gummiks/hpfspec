@@ -39,10 +39,11 @@ class HPFSpectrum(object):
     path_wavelength_solution = PATH_WAVELENGTH
     
     def __init__(self,filename,targetname='',deblaze=True,tell_err_factor=1.,ccf_redshift=True,
-                 sky_err_factor=1.,sky_scaling_factor=1.0,verbose=False,setup_he10830=False,rv=0.):
+                 sky_err_factor=1.,sky_scaling_factor=1.0,verbose=False,setup_he10830=False,rv=0.,degrade_snr=None):
         self.filename = filename
         self.basename = filename.split(os.sep)[-1]
         self.sky_scaling_factor = sky_scaling_factor
+        self.degrade_snr = degrade_snr
         
         # Read science frame
         self.hdu = astropy.io.fits.open(filename)
@@ -71,6 +72,10 @@ class HPFSpectrum(object):
         self._f_sci = self.hdu[1].data*self.exptime
         self.f_sci = self.hdu[1].data*self.exptime/self.flat_sci
         self.f = self.f_sci - self.f_sky
+        if self.degrade_snr != None:
+            self.f_degrade, self.v_degrade = np.zeros_like(self.f), np.zeros_like(self.e)
+            for o in range(28):
+                self.f_degrade[o], self.v_degrade[o] = DegradeSNR(self.f[o], self.e[o]**2, self.degrade_snr)
 
         # Read in wavelength
         self.w = self.hdu[7].data
@@ -250,6 +255,8 @@ class HPFSpectrum(object):
         w = w[m]
         f = self.f_debl[m]
         e = self.e_debl[m]
+        if self.degrade_snr != None:
+                f = self.f_degrade_debl[m]
         m = np.isfinite(f)
         w = w[m]
         f = f[m]
@@ -275,8 +282,12 @@ class HPFSpectrum(object):
         self.f_sci_debl = self.hdu[1].data*self.exptime/hdu[1].data
         self.f_sky_debl = self.hdu[2].data*self.exptime/hdu[2].data
         self.f_debl = self.f_sci_debl-self.f_sky_debl*self.sky_scaling_factor
+        if self.degrade_snr != None:
+            self.f_degrade_debl = self.f_degrade/hdu[1].data
         for i in range(28): 
             self.f_debl[i] = self.f_debl[i]/np.nanmedian(self.f_debl[i])
+            if self.degrade_snr != None:
+                self.f_degrade_debl[i] = self.f_degrade_debl[i]/np.nanmedian(self.f_degrade_debl[i])
         self.e_debl = self.f_debl/self.sn
             
     def redshift(self,berv=None,rv=None):
@@ -518,6 +529,7 @@ class HPFSpecList(object):
                          columns=['OBJECT_ID','filename','exptime','sn18','qprog','rv'])
         return d
 
+<<<<<<< HEAD
     
     def resample_order(self,ww,p=None,shifted=True):
         """
@@ -646,6 +658,28 @@ class FitChi2(object):
         bx = ax.twinx()
         bx.plot(self.chi2f.w,self.chi2f.mask)
 
+def DegradeSNR(Flux, Variance, DesiredSNR):
+	"""
+	Degrade the SNR, by increasing the variance based on the DesiredSNR
+	
+	INPUTS:
+		Flux: 1D Flux array
+		Variance: 1D Variance array
+		DesiredSNR: Median SNR for the 1D array, calculated as Flux/sqrt(Variance)
+	OUTPUTS:
+		NewFlux: Gaussian distributed new flux using a new variance based on DesiredSNR
+		NewVariance: New variance based on degraded SNR
+		
+	Shubham Kanodia
+	4th March 2022
+	"""
+	
+	OriginalSNR = np.nanmedian(Flux/np.sqrt(Variance))
+	ScaleSNR = OriginalSNR/DesiredSNR
+	NewVariance = Variance * (ScaleSNR**2)
+	NewFlux = np.random.normal(loc=Flux, scale=np.sqrt(NewVariance))
+	
+	return NewFlux, NewVariance
 
 #def chi2spectra(ww,H1,H2,rv1=None,rv2=None,plot=False,verbose=False):
 #    """
