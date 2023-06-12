@@ -21,7 +21,7 @@ class Target(object):
         T = Target('G 9-40')
     """
     
-    def __init__(self,name,config_folder=PATH_TARGETS,verbose=False):
+    def __init__(self,name,config_folder=PATH_TARGETS,verbose=False,obsname='McDonald Observatory'):
         self.config_folder = config_folder
         self.config_filename = self.config_folder + os.sep + name + '.config'
         if name=='Teegarden':
@@ -58,6 +58,7 @@ class Target(object):
             self.rv = 0.
         else:
             self.rv = self.data['rv']/1000.# if self.data['rv'] < 1e20 else 0.
+        self.obsname = obsname
 
 
     def query_tic(self,ticname):
@@ -98,7 +99,7 @@ class Target(object):
             config.write(f)
         print('Done')
         
-    def calc_barycentric_velocity(self,jdtime,obsname):
+    def calc_barycentric_velocity(self,jdtime,obs):
         """
         OUTPUT:
             BJD_TDB
@@ -108,7 +109,9 @@ class Target(object):
             bjd, berv = bary.bjdbrv(H.jd_midpoint,T.ra,T.dec,obsname='McDonald Observatory',
                            pmra=T.pmra,pmdec=T.pmdec,rv=T.rv,parallax=T.px,epoch=T.epoch)
         """
-        bjd, berv = bary.bjdbrv(jdtime,self.ra,self.dec,obsname='McDonald Observatory',
+        #bjd, berv = bary.bjdbrv(jdtime,self.ra,self.dec,obsname=self.obsname,
+        #                           pmra=self.pmra,pmdec=self.pmdec,rv=self.rv,parallax=self.px,epoch=self.epoch)
+        bjd, berv = bary.bjdbrv(jdtime,self.ra,self.dec,obsname=obs,
                                    pmra=self.pmra,pmdec=self.pmdec,rv=self.rv,parallax=self.px,epoch=self.epoch)
         return bjd, berv/1000.
     

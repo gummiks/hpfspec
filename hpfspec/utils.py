@@ -2,6 +2,7 @@ from __future__ import print_function
 import os
 import matplotlib.pyplot as plt
 import matplotlib
+import numpy as np
 
 def make_dir(dirname,verbose=True):
     try:

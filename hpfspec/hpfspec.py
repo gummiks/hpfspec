@@ -38,8 +38,8 @@ class HPFSpectrum(object):
     path_ccf_mask = PATH_CCF_MASK
     path_wavelength_solution = PATH_WAVELENGTH
     
-    def __init__(self,filename,targetname='',deblaze=True,ccf_redshift=True,tell_err_factor=1.,
-                 sky_err_factor=1.,sky_scaling_factor=1.0,verbose=False,setup_he10830=False):
+    def __init__(self,filename,targetname='',deblaze=True,tell_err_factor=1.,ccf_redshift=True,
+                 sky_err_factor=1.,sky_scaling_factor=1.0,verbose=False,setup_he10830=False,rv=0.):
         self.filename = filename
         self.basename = filename.split(os.sep)[-1]
         self.sky_scaling_factor = sky_scaling_factor
@@ -102,13 +102,18 @@ class HPFSpectrum(object):
         self.target = target.Target(targetname,verbose=verbose)
         self.bjd, self.berv = self.target.calc_barycentric_velocity(self.jd_midpoint,'McDonald Observatory')
 
-        if verbose:
-            print('Barycentric shifting')
-        self.rv = 0.
+
         if ccf_redshift:
+            if verbose:
+                print('Barycentric shifting')
             v = np.linspace(-125,125,1501)
             _, rabs = self.rvabs_for_orders(v,orders=[5,6,16,17],plot=False,verbose=verbose)
             self.rv = np.median(rabs)
+            self.redshift(rv=self.rv)
+        else:
+            self.rv = rv
+            if verbose:
+                print('Barycentric shifting, RV={:0.3f}'.format(self.rv))
             self.redshift(rv=self.rv)
 
         if deblaze:

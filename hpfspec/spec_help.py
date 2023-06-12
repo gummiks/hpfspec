@@ -891,7 +891,7 @@ def vsini_from_hpf_spectra(ftarg,fcal,eps=0.6,
             _s, _rv, _amp, _ccf = vsini_calcurve_for_wf(w2,f2,[vsini],v,M=M,rv_abs=0.,eps=eps,plot=False,verbose=False)
             min_t = 1.-np.min(ccfs1[i][0])
             ax.plot(v,ccfs1[i][0],color="crimson",lw=1)
-            ax.plot(v+rvs1[i][0]-_rv[0],(_ccf[0]-1.)*(min_t/(1.-np.min(_ccf[0])))+1.,color="black",alpha=1.,ls="-",lw=1)
+            ax.plot(v+rvs1[i][0]-_rv[0],(_ccf[0]-1.)*(min_t/(1.-np.min(_ccf[0])))+1.,color="black",alpha=1.,ls="-",lw=1) # reference, broadened
             utils.ax_apply_settings(ax,ticksize=6)
         if len(orders) < N*L:
             for i in range(len(orders),N*L):
@@ -937,7 +937,22 @@ def calculate_ew_w_errors(wl,fl,e,limit_left,limit_right,N=100):
 def calculate_ew(wl,fl,limit_left,limit_right):
     """
     This amounts to calculating INT(1 - F / F_continuum)*d_wl with the bounds as the feature limits
-    Our F_continuum is assumed to be 0 and we have a discrete sampling so use a sum
+    Our F_continuum is assumed to be 0 and we have a discrete sampling so use a sum.
+
+    This is correct if fl is normalized to unity.
+
+    NOTES:
+        This seems to be more correct than specutils:
+            N = 200
+            w = np.arange(4900,5100,0.1)
+            f = np.ones(len(w))
+            m = (w>4990.) & (w<5010.)
+            f[m] = 0.
+            fig, ax = plt.subplots()
+            ax.plot(w,f)
+            S = Spectrum1D(spectral_axis=w*u.AA,flux=f*u.Unit('erg cm-2 s-1 AA-1'))
+            print('EW',equivalent_width(S,regions=SpectralRegion(4900.*u.AA,5100*u.AA))) # 19.9
+            print(hpfspec.spec_help.calculate_ew(w,f,4902,5098)) # 20.0, correct
     """
     
     # for now just force it to be that we have the feature entirely within the bounds
